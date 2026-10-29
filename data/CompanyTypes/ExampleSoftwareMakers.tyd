@@ -1,0 +1,16 @@
+# Lets AI companies release Example Software. Without a company type,
+# only the player can develop a modded software type.
+CompanyType
+	{
+	Specialization	"Example Software Makers"
+	PerYear		0.2
+	Min		1
+	Max		3
+	Types
+		[
+			{
+			Software	"Example Software"
+			Chance		1
+			}
+		]
+	}

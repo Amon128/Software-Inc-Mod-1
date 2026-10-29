@@ -1,0 +1,10 @@
+bin/
+obj/
+dist/
+
+# Per-machine settings
+GamePath.user.props
+*.user
+.vs/
+.idea/
+.vscode/

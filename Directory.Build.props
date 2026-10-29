@@ -1,0 +1,29 @@
+<Project>
+  <!-- Per-machine overrides such as the game install path. Git-ignored; see GamePath.user.props.example. -->
+  <Import Project="$(MSBuildThisFileDirectory)GamePath.user.props" Condition="Exists('$(MSBuildThisFileDirectory)GamePath.user.props')" />
+
+  <PropertyGroup>
+    <!-- Used as the assembly name, the namespace and the folder name under the game's DLLMods/ and Mods/. -->
+    <ModName>SoftwareIncMod1</ModName>
+    <ModVersion>0.1.0</ModVersion>
+
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+    <DataModDir>$(RepoRoot)data/</DataModDir>
+  </PropertyGroup>
+
+  <!-- Default Steam install locations. Override SoftwareIncDir in GamePath.user.props
+       or with an environment variable of the same name. -->
+  <PropertyGroup Condition="'$(SoftwareIncDir)' == ''">
+    <SoftwareIncDir Condition="$([MSBuild]::IsOSPlatform('Windows'))">C:\Program Files (x86)\Steam\steamapps\common\Software Inc</SoftwareIncDir>
+    <SoftwareIncDir Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(HOME)/.local/share/Steam/steamapps/common/Software Inc</SoftwareIncDir>
+    <SoftwareIncDir Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(HOME)/Library/Application Support/Steam/steamapps/common/Software Inc</SoftwareIncDir>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SoftwareIncManagedDir Condition="'$(SoftwareIncManagedDir)' == '' and $([MSBuild]::IsOSPlatform('OSX'))">$(SoftwareIncDir)/Software Inc.app/Contents/Resources/Data/Managed</SoftwareIncManagedDir>
+    <SoftwareIncManagedDir Condition="'$(SoftwareIncManagedDir)' == ''">$(SoftwareIncDir)/Software Inc_Data/Managed</SoftwareIncManagedDir>
+
+    <!-- Copy the built mod into the game folder after every build, if the game is installed there. -->
+    <DeployToGame Condition="'$(DeployToGame)' == '' and Exists('$(SoftwareIncDir)')">true</DeployToGame>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,12 @@
+<Project>
+  <!-- Copy this file to GamePath.user.props (git-ignored) and point it at your install. -->
+  <PropertyGroup>
+    <SoftwareIncDir>D:\SteamLibrary\steamapps\common\Software Inc</SoftwareIncDir>
+
+    <!-- Only needed if the game's DLLs aren't in <SoftwareIncDir>/Software Inc_Data/Managed. -->
+    <!-- <SoftwareIncManagedDir>...</SoftwareIncManagedDir> -->
+
+    <!-- Set to false to build without copying the mod into the game folder. -->
+    <!-- <DeployToGame>false</DeployToGame> -->
+  </PropertyGroup>
+</Project>

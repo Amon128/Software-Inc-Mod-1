@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- The game runs on Unity's Mono with the .NET 4.x profile. -->
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>$(ModName)</AssemblyName>
+    <RootNamespace>$(ModName)</RootNamespace>
+    <Version>$(ModVersion)</Version>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <!-- The game's built-in compiler (used for loose .cs mods, and required for Steam Workshop
+       uploads) only understands C# 3 and crashes on enums. Build with -p:WorkshopCompat=true
+       to hold the code to the same rules. -->
+  <PropertyGroup Condition="'$(WorkshopCompat)' == 'true'">
+    <LangVersion>3</LangVersion>
+  </PropertyGroup>
+
+  <!-- The game's own assemblies. Private="false" keeps them out of the build output. -->
+  <ItemGroup>
+    <Reference Include="$(SoftwareIncManagedDir)/Assembly-CSharp.dll" Private="false" />
+    <Reference Include="$(SoftwareIncManagedDir)/Assembly-CSharp-firstpass.dll" Private="false" />
+    <Reference Include="$(SoftwareIncManagedDir)/UnityEngine*.dll" Private="false" />
+  </ItemGroup>
+
+  <!-- Show the data mod in the IDE alongside the code. -->
+  <ItemGroup>
+    <None Include="$(DataModDir)**/*" LinkBase="data" />
+  </ItemGroup>
+
+  <Target Name="CheckGamePath" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(SoftwareIncManagedDir)/Assembly-CSharp.dll')"
+           Text="Software Inc's DLLs were not found in '$(SoftwareIncManagedDir)'. Copy GamePath.user.props.example to GamePath.user.props and set SoftwareIncDir to your game folder." />
+  </Target>
+
+  <Target Name="CheckWorkshopCompat" BeforeTargets="CoreCompile" Condition="'$(WorkshopCompat)' == 'true'">
+    <ItemGroup>
+      <_EnumSource Include="@(Compile)"
+                   Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($([System.IO.File]::ReadAllText('%(Compile.FullPath)')), '\benum\s+[A-Za-z_]\w*\s*(:\s*[\w.]+\s*)?\{'))" />
+    </ItemGroup>
+    <Error Condition="'@(_EnumSource)' != ''"
+           Text="Enums crash the game's built-in compiler. Replace the enum declarations in: @(_EnumSource->'%(Filename)%(Extension)', ', ')" />
+  </Target>
+
+  <!-- Copies the DLL to <game>/DLLMods/<ModName>/ and the data mod to <game>/Mods/<ModName>/. -->
+  <Target Name="DeployToGame" AfterTargets="Build" Condition="'$(DeployToGame)' == 'true'">
+    <ItemGroup>
+      <_DataModFile Include="$(DataModDir)**/*" />
+    </ItemGroup>
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SoftwareIncDir)/DLLMods/$(ModName)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_DataModFile)"
+          DestinationFiles="@(_DataModFile->'$(SoftwareIncDir)/Mods/$(ModName)/%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+    <Message Importance="high" Text="Deployed $(ModName) to $(SoftwareIncDir)" />
+  </Target>
+
+  <!-- dotnet build -c Release -t:Package
+       Writes dist/<ModName>-<ModVersion>.zip laid out like the game folder, ready to extract into it. -->
+  <Target Name="Package" DependsOnTargets="Build">
+    <PropertyGroup>
+      <_PackageRoot>$(RepoRoot)dist/$(ModName)/</_PackageRoot>
+      <_PackageZip>$(RepoRoot)dist/$(ModName)-$(ModVersion).zip</_PackageZip>
+    </PropertyGroup>
+    <ItemGroup>
+      <_DataModFile Include="$(DataModDir)**/*" />
+    </ItemGroup>
+    <RemoveDir Directories="$(_PackageRoot)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(_PackageRoot)DLLMods/$(ModName)" />
+    <Copy SourceFiles="@(_DataModFile)"
+          DestinationFiles="@(_DataModFile->'$(_PackageRoot)Mods/$(ModName)/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <ZipDirectory SourceDirectory="$(_PackageRoot)" DestinationFile="$(_PackageZip)" Overwrite="true" />
+    <Message Importance="high" Text="Packaged $(_PackageZip)" />
+  </Target>
+
+</Project>

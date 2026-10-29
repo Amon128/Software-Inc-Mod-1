@@ -1,0 +1,81 @@
+# Example software type. Replace it with your own, or delete it along with
+# CompanyTypes/ExampleSoftwareMakers.tyd and NameGenerators/ExampleSoftwareNames.txt.
+# Check that players can reach full submarket satisfaction with the console
+# command TEST_DEV_MOD <mod> <software type> <category>.
+SoftwareType
+	{
+	Name			"Example Software"
+	Description		"An example product added by SoftwareIncMod1."
+	Unlock			1980
+	Random			0.1
+	IdealPrice		50
+	OptimalDevTime		25
+	OSSupport		Computer
+	OneClient		False
+	InHouse			False
+	NameGenerator		ExampleSoftwareNames
+	SubmarketNames		[ Casual; Professional; Enterprise ]
+	Categories
+		[
+			{
+			Name		Standard
+			Description	"The standard edition."
+			Popularity	0.5
+			Submarkets	[ 2; 2; 1 ] # 40%, 40%, 20% of consumers
+			Retention	24
+			TimeScale	1
+			Iterative	0.75
+			}
+		]
+	Features
+		[
+			{
+			Name		Core
+			Spec		System
+			Description	"The core of the product. Always included."
+			DevTime		3
+			CodeArt		1
+			Submarkets	[ 1; 1; 1 ]
+			Features
+				[
+					{
+					Name		"Plugin support"
+					Description	"Needs a level 1 System specialist."
+					Level		1
+					DevTime		2
+					CodeArt		1
+					Submarkets	[ 0; 1; 2 ]
+					}
+					{
+					Name		"Premium support line"
+					Description	"Costs the developer $100 per day after release."
+					Level		3 # Level 3 features run scripts instead of satisfying submarkets
+					DevTime		1
+					CodeArt		1
+					Submarkets	0
+					Script_EndOfDay	"Product.DevCompany.MakeTransaction(-100, Bills, \"Owned\");"
+					}
+				]
+			}
+			{
+			Name		Interface
+			Spec		"2D"
+			Optional	True
+			Description	"Optional, so the player can leave it out."
+			DevTime		3
+			CodeArt		0.3
+			Submarkets	[ 3; 1; 0 ]
+			Features
+				[
+					{
+					Name		Themes
+					Description	"Needs a level 2 2D specialist."
+					Level		2
+					DevTime		2
+					CodeArt		0.2
+					Submarkets	[ 2; 1; 0 ]
+					}
+				]
+			}
+		]
+	}
